@@ -76,6 +76,50 @@
     });
 }
 
-// ... mantenha os outros métodos validateKey e getHWID iguais da versão anterior
++ (void)validateKey:(NSString *)key completion:(void(^)(BOOL))completion {
+    NSString *hwid = [self getHWID];
+    
+    NSURL *url = [NSURL URLWithString:@"https://keyauth.win/api/1.2/"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    
+    NSDictionary *payload = @{
+        @"type": @"login",
+        @"key": key,
+        @"hwid": hwid,
+        @"name": APP_NAME,
+        @"ownerid": OWNER_ID,
+        @"ver": APP_VERSION
+    };
+    
+    NSError *err;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&err];
+    if (err) {
+        completion(NO);
+        return;
+    }
+    
+    request.HTTPBody = jsonData;
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request
+                                                                 completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error || !data) {
+            completion(NO);
+            return;
+        }
+        
+        NSDictionary *respJson = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        BOOL success = [respJson[@"success"] boolValue];
+        completion(success);
+    }];
+    [task resume];
+}
+
++ (NSString *)getHWID {
+    // Usa identifierForVendor como HWID
+    return [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+}
 
 @end
+
