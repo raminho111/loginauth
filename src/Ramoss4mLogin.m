@@ -47,23 +47,29 @@
             UITextField *keyField = weakAlert.textFields.firstObject;
             NSString *userKey = keyField.text;
             if (userKey.length == 0) {
+                // Não fecha o alerta, só mantém na tela
                 [self showLoginIfNeeded];
                 return;
             }
+
+            // Desabilita o botão para evitar múltiplos cliques
+            action.enabled = NO;
 
             [self validateKey:userKey completion:^(BOOL success) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (success) {
                         [weakAlert dismissViewControllerAnimated:YES completion:nil];
                     } else {
+                        // Reabilita o botão
+                        action.enabled = YES;
+
                         UIAlertController *errorAlert = [UIAlertController alertControllerWithTitle:@"Erro"
                                                                                             message:@"Key inválida"
                                                                                      preferredStyle:UIAlertControllerStyleAlert];
                         [errorAlert addAction:[UIAlertAction actionWithTitle:@"OK"
                                                                        style:UIAlertActionStyleCancel
-                                                                     handler:^(UIAlertAction * _Nonnull action) {
-                            [self showLoginIfNeeded];
-                        }]];
+                                                                     handler:nil]];
+                        UIViewController *rootVC = weakAlert.presentingViewController ?: keyWindow.rootViewController;
                         [rootVC presentViewController:errorAlert animated:YES completion:nil];
                     }
                 });
@@ -122,4 +128,3 @@
 }
 
 @end
-
