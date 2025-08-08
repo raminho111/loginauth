@@ -3,6 +3,10 @@
 
 __attribute__((constructor))
 static void initialize() {
-    // Chama o login assim que a dylib carregar
-    [Ramoss4mLogin showLoginIfNeeded];
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue]
+                                                  usingBlock:^(NSNotification * _Nonnull note) {
+        [Ramoss4mLogin showLoginIfNeeded];
+    }];
 }
