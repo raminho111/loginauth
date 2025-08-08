@@ -1,0 +1,30 @@
+name: Build ramoss4m dylib
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install Xcode Command Line Tools
+      run: xcode-select --install || echo "Already installed"
+
+    - name: Build dylib
+      working-directory: ./  # se o Makefile estiver na raiz
+      run: make
+
+    - name: Upload dylib artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ramoss4m-dylib
+        path: libramoss4m.dylib
